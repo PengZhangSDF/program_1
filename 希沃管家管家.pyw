@@ -3,7 +3,9 @@ import configparser
 import psutil
 import subprocess
 import tkinter.messagebox as messagebox
-
+import os
+import time
+import json
 def open_seewo():
     subprocess.Popen("seewocontrol.exe")
 
@@ -76,6 +78,13 @@ def open_config_menu():
     target_height_entry.insert(tk.END, config.get('Variables', 'target_height'))
     target_height_entry.pack()
 
+    # 测试运行配置项
+    test_run = tk.Label(config_window, text="测试运行时长:")
+    test_run.pack()
+    test_run_entry = tk.Entry(config_window, width=60, font=("Arial", 22))
+    test_run_entry.insert(tk.END, config.get('Variables', 'test_run'))
+    test_run_entry.pack()
+
     # 保存配置并关闭窗口的函数
     def save_and_close():
         config.set('Variables', 'program_name', program_name_entry.get())
@@ -85,14 +94,46 @@ def open_config_menu():
         config.set('Variables', 'delay', delay_entry.get())
         config.set('Variables', 'target_width', target_width_entry.get())
         config.set('Variables', 'target_height', target_height_entry.get())
+        config.set('Variables','test_run',test_run_entry.get())
 
         with open('config.txt', 'w') as config_file:
             config.write(config_file)
 
         config_window.destroy()
+    # 测试按钮配置项
+    def save_and_execute():
+        # 记录当前 program_name 的值并临时存储到 pro_name 变量中
+        pro_name = config.get('Variables', 'program_name')
+        run_time =int(config.get('Variables','test_run'))
+        
+        # 修改 program_name 的值为 cmd.exe
+        config.set('Variables', 'program_name', 'cmd.exe')
+        
+        with open('config.txt', 'w') as config_file:
+            config.write(config_file)
+        
+        # 打开 cmd.exe 并运行 seewocontrol.exe
+        os.system('start cmd.exe /c "seewocontrol.exe"')
+        
+        # 等待 
+        time.sleep(run_time)
+        
+        # 关闭 cmd.exe 和 seewocontrol.exe
+        os.system('taskkill /f /im cmd.exe')
+        os.system('taskkill /f /im seewocontrol.exe')
+        
+        # 将 pro_name 的值重新赋值给 config.txt 中的 program_name
+        config.set('Variables', 'program_name', pro_name)
+        
+        with open('config.txt', 'w') as config_file:
+            config.write(config_file)
 
     # 保存并退出按钮
-    save_button = tk.Button(config_window, text="保存并退出", command=save_and_close, width=10, height=2)
+    save_button = tk.Button(config_window, text="保存并退出", command=save_and_close, width=80, height=2)
+    save_button.pack()
+    
+    # 保存并执行按钮
+    save_button = tk.Button(config_window, text="测试运行（如果测试运行时长修改，请先保存）", command=save_and_execute, width=80, height=2)
     save_button.pack()
 
 root = tk.Tk()
