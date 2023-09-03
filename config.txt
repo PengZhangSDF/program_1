@@ -1,0 +1,10 @@
+[Variables]
+program_name = cmd.exe
+photo_name = jc.png
+x = 0
+y = 0
+delay = 0.3
+target_width = 15
+target_height = 15
+test_run = 5
+
