@@ -6,8 +6,24 @@ import tkinter.messagebox as messagebox
 import os
 import time
 import json
+
+seewo_running = False  # 标记希沃管家是否已经启动
+
 def open_seewo():
-    subprocess.Popen("seewocontrol.exe")
+    global seewo_running
+    seewo_running = False
+    if not seewo_running:
+        for proc in psutil.process_iter(['pid', 'name']):
+            if proc.info['name'] == "seewocontrol.exe":
+                seewo_running = True
+                messagebox.showinfo("提示", "希沃管家管家已经启动")
+                return
+        
+        subprocess.Popen("seewocontrol.exe")
+        seewo_running = True
+        root.after(5000, lambda: setattr(root, "seewo_running", False))
+    else:
+        messagebox.showinfo("提示", "希沃管家管家已经启动")
 
 def close_seewo():
     closed = False  # 标记是否成功关闭希沃管家
